@@ -1,226 +1,141 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LinkFlow AI - Existing Link Quality Audit</title>
-<style>
-:root{
-  --bg:#061018;--card:#102638;--soft:#0c1d2b;--text:#f7fbff;--muted:#b9cada;--line:#2e5875;
-  --green:#38d9a9;--green2:#22c55e;--gold:#ffd166;--orange:#f59e0b;--red:#ff6b6b;--blue:#7dd3fc;--purple:#c084fc;
-}
-*{box-sizing:border-box}
-body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;color:var(--text);background:radial-gradient(circle at 15% 0%,rgba(56,217,169,.2),transparent 33%),radial-gradient(circle at 85% 12%,rgba(255,209,102,.16),transparent 33%),linear-gradient(135deg,var(--bg),#040812 75%)}
-.app{display:grid;grid-template-columns:310px 1fr;min-height:100vh}
-aside{background:rgba(5,10,18,.94);border-right:1px solid var(--line);padding:22px;position:sticky;top:0;height:100vh;overflow:auto}
-.logo{display:flex;align-items:center;gap:11px;font-size:23px;font-weight:950;margin-bottom:18px}.logo span{width:44px;height:44px;border-radius:15px;display:grid;place-items:center;background:linear-gradient(135deg,var(--green),var(--gold));color:#03100d}
-.side-note{font-size:13px;line-height:1.6;color:var(--muted);background:#0a1824;border:1px solid var(--line);padding:12px;border-radius:16px;margin-bottom:16px}
-.nav button{width:100%;display:block;background:transparent;color:var(--muted);border:1px solid transparent;padding:12.5px 13px;border-radius:13px;margin-bottom:7px;text-align:left;cursor:pointer;font-weight:800}
-.nav button.active,.nav button:hover{background:linear-gradient(135deg,#153047,#102638);border-color:#3a6b90;color:#fff}
-main{padding:26px;overflow:auto}.top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:18px}
-h1{font-size:31px;margin:0;letter-spacing:-.8px}h2{margin:0 0 14px;font-size:21px}h3{margin:10px 0 8px}.sub{color:var(--muted);margin-top:8px;line-height:1.65;max-width:980px}
-.card,.scan,.suggestion{background:linear-gradient(145deg,rgba(16,38,56,.97),rgba(9,23,34,.98));border:1px solid var(--line);border-radius:22px;box-shadow:0 22px 70px rgba(0,0,0,.28)}
-.scan{padding:20px;margin-bottom:20px}.input-row{display:grid;grid-template-columns:1fr 150px 190px 220px;gap:12px}
-input,select,textarea{width:100%;background:#06111b;color:var(--text);border:1px solid #3a6b90;border-radius:14px;padding:14px;outline:none;font-size:14px}textarea{min-height:126px;resize:vertical;line-height:1.6}
-input:focus,select:focus,textarea:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(56,217,169,.14)}
-.btn{background:linear-gradient(135deg,var(--green),var(--green2));color:#03130d;border:0;border-radius:14px;padding:14px 18px;font-weight:950;cursor:pointer}.btn:hover{filter:brightness(1.08)}.btn.secondary{background:#112638;color:#fff;border:1px solid #3a6b90}.btn.gold{background:linear-gradient(135deg,var(--gold),var(--orange));color:#1b1200}.btn.smallbtn{padding:8px 11px;border-radius:10px;font-size:12px}.btn:disabled{opacity:.45;cursor:not-allowed}
-.progress{display:none;height:12px;background:#06101a;border-radius:99px;overflow:hidden;margin-top:14px;border:1px solid #294b68}.progress div{height:100%;width:0;background:linear-gradient(90deg,var(--green),var(--gold));transition:.25s}
-.section{display:none}.section.active{display:block}.grid{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:18px}.card{padding:18px;margin-bottom:16px}.metric{font-size:30px;font-weight:950;margin-top:7px}.label{font-size:13px;color:var(--muted);font-weight:800}
-.good{color:var(--green)}.bad{color:var(--red)}.warn{color:var(--gold)}.blue{color:var(--blue)}.purple{color:var(--purple)}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}.three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}.four{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.small{font-size:13.5px;color:var(--muted);line-height:1.7}
-.notice{border-left:5px solid var(--green);background:#0a1b28;padding:13px 15px;border-radius:14px;color:#e5f5ff;line-height:1.65}.warning{border-left-color:var(--gold)}.danger{border-left-color:var(--red)}
-table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:12px;border-bottom:1px solid #294b68;text-align:left;vertical-align:top}th{background:#0a1b28;color:#ecf8ff;position:sticky;top:0;z-index:3}tr:hover td{background:#112b40}
-.pill{display:inline-block;border-radius:99px;padding:5px 9px;font-size:12px;border:1px solid #4e789b;background:#0b1a28;color:#e9f5ff;white-space:nowrap;font-weight:850}.pill.green{border-color:#1f9d63;color:#9ff6c8}.pill.red{border-color:#c24152;color:#ffbac3}.pill.gold{border-color:#b98513;color:#ffe09a}.pill.blue{border-color:#2380b7;color:#b6e9ff}.pill.purple{border-color:#8b5cf6;color:#dec8ff}
-.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}.searchbar{display:grid;grid-template-columns:1fr 180px 180px;gap:10px;margin:12px 0}.suggestion{padding:16px;margin-bottom:14px}.code{background:#06101a;border:1px solid #294b68;border-radius:14px;padding:13px;color:#eaf5ff;line-height:1.7;margin-top:8px;white-space:normal}.copy-fix{background:#092018;border-color:#287e5f}
-.preview{background:#f8fafc;color:#0f172a;border-radius:16px;padding:16px;line-height:1.75;margin-top:10px}.preview a{color:#0f766e;font-weight:900}.highlight-anchor{color:#04130d;background:linear-gradient(135deg,var(--gold),#fff1a8);padding:2px 5px;border-radius:6px;font-weight:950}
-.checks{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.check{background:#0b1c2a;border:1px solid #294b68;border-radius:16px;padding:12px}.bar{height:10px;background:#06111b;border-radius:99px;overflow:hidden;border:1px solid #294b68}.bar span{display:block;height:100%;background:linear-gradient(90deg,var(--green),var(--gold));border-radius:99px}
-.toast{position:fixed;right:24px;bottom:24px;background:#0b1722;border:1px solid var(--line);padding:14px 18px;border-radius:14px;display:none;box-shadow:0 18px 50px rgba(0,0,0,.4);z-index:20;color:#fff}
-.graph{height:430px;position:relative;background:radial-gradient(circle at center,#173147,#07111b);border-radius:18px;border:1px solid var(--line);overflow:hidden}.node{position:absolute;background:#0d2233;border:1px solid #4e789b;border-radius:14px;padding:10px 12px;font-size:12px;box-shadow:0 12px 30px rgba(0,0,0,.25);font-weight:850}.line{position:absolute;height:2px;background:linear-gradient(90deg,var(--green),var(--gold));transform-origin:left center;opacity:.8}
-@media(max-width:1100px){.app{grid-template-columns:1fr}aside{height:auto;position:relative}.input-row,.grid,.two,.three,.four,.searchbar,.checks{grid-template-columns:1fr}.top{display:block}}
-</style>
+  <meta charset="UTF-8">
+  <title>LinkFlow AI</title>
+  <style>
+    body{margin:0;font-family:Arial;background:#06111d;color:white}
+    .wrap{display:flex;min-height:100vh}
+    aside{width:250px;background:#030912;padding:20px}
+    aside h1{font-size:24px}
+    aside div{padding:14px;margin:10px 0;background:#10263a;border-radius:10px}
+    main{flex:1;padding:35px}
+    .card{background:#0b2233;border:1px solid #1d5b86;border-radius:18px;padding:25px;margin-bottom:25px}
+    input,select{background:#06111d;color:white;border:1px solid #2776aa;border-radius:12px;padding:15px;font-size:16px}
+    button{background:#27d17f;color:#001b10;border:0;border-radius:12px;padding:15px 30px;font-weight:bold;font-size:16px;cursor:pointer}
+    .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+    .stat{background:#0b2233;border:1px solid #1d5b86;border-radius:15px;padding:20px}
+    .stat h3{font-size:14px;color:#b6d8ff}
+    .stat strong{font-size:34px;color:#35e1a1}
+    table{width:100%;border-collapse:collapse;margin-top:15px}
+    th,td{border-bottom:1px solid #23465e;padding:12px;text-align:left}
+    .error{color:#ff6b6b}
+    .ok{color:#35e1a1}
+  </style>
 </head>
 <body>
-<div class="app">
-<aside>
-  <div class="logo"><span>LF</span> LinkFlow AI</div>
-  <div class="side-note">New: Existing internal link quality audit. Good links keep, weak links fix.</div>
-  <div class="nav">
-    <button class="active" onclick="showTab('dashboard',this)">Dashboard</button>
-    <button onclick="showTab('crawler',this)">Sitemap Crawler</button>
-    <button onclick="showTab('pages',this)">Pages Audit</button>
-    <button onclick="showTab('existing',this)">Existing Link Quality</button>
-    <button onclick="showTab('priority',this)">Priority Pages</button>
-    <button onclick="showTab('suggestions',this)">Exact SEO Fixes</button>
-    <button onclick="showTab('orphan',this)">Orphan Fixer</button>
-    <button onclick="showTab('anchors',this)">Anchor Variations</button>
-    <button onclick="showTab('spam',this)">Spam Safety</button>
-    <button onclick="showTab('preview',this)">Before/After Preview</button>
-    <button onclick="showTab('graph',this)">Link Map</button>
-    <button onclick="showTab('export',this)">Bulk Export</button>
-  </div>
-</aside>
+<div class="wrap">
+  <aside>
+    <h1>🟢 LinkFlow AI</h1>
+    <div>Dashboard</div>
+    <div>Sitemap Crawler</div>
+    <div>Pages Audit</div>
+    <div>Existing Link Quality</div>
+    <div>Priority Pages</div>
+    <div>Exact SEO Fixes</div>
+  </aside>
 
-<main>
-  <div class="top">
-    <div>
-      <h1>Advanced Internal Linking Tool — Safe Final Version</h1>
-      <div class="sub">Ab existing internal links bhi audit honge: relevant links keep, weak/unrelated links flag, aur SEO best-practice replacement suggestion milegi.</div>
+  <main>
+    <h1>Internal Linking Audit Tool</h1>
+    <p>Real Cloudflare Worker API connected. Fake demo numbers removed.</p>
+
+    <div class="card">
+      <input id="site" style="width:55%" placeholder="https://example.com">
+      <select id="limit">
+        <option value="100">100 Pages</option>
+        <option value="250">250 Pages</option>
+        <option value="500" selected>500 Pages</option>
+      </select>
+      <button onclick="auditSite()">Audit Website</button>
+      <p id="status"></p>
     </div>
-    <button class="btn secondary" onclick="resetDemo()">Reset</button>
-  </div>
 
-  <div class="scan">
-    <div class="input-row">
-      <input id="siteUrl" value="https://hugryjaksmenu.com" placeholder="Enter website URL">
-      <select id="crawlLimit"><option value="25">25 Pages</option><option value="50">50 Pages</option><option value="100">100 Pages</option><option value="250">250 Pages</option><option value="500" selected>500 Pages</option></select>
-      <select id="auditMode"><option>Safe Natural SEO</option><option>Balanced SEO</option><option>Aggressive Opportunity Scan</option></select>
-      <button class="btn" onclick="startAudit()">Audit Website</button>
-    </div>
-    <div class="progress" id="progress"><div id="progressBar"></div></div>
-    <div class="small" id="scanStatus" style="margin-top:10px">Demo mode uses simulated actual-style URLs. Real version requires backend crawler.</div>
-  </div>
-
-  <section id="dashboard" class="section active">
     <div class="grid">
-      <div class="card"><div class="label">Pages Found</div><div class="metric" id="mPages">0</div></div>
-      <div class="card"><div class="label">Internal Links</div><div class="metric good" id="mLinks">0</div></div>
-      <div class="card"><div class="label">Weak Existing</div><div class="metric bad" id="mWeak">0</div></div>
-      <div class="card"><div class="label">Exact Fixes</div><div class="metric warn" id="mSug">0</div></div>
-      <div class="card"><div class="label">Avg Relevance</div><div class="metric purple" id="mRel">0%</div></div>
-      <div class="card"><div class="label">SEO Score</div><div class="metric blue" id="mScore">0%</div></div>
+      <div class="stat"><h3>Sitemap Files Found</h3><strong id="pages">0</strong></div>
+      <div class="stat"><h3>Internal Links</h3><strong id="links">Need Crawl</strong></div>
+      <div class="stat"><h3>Weak Existing</h3><strong id="weak">Need Crawl</strong></div>
+      <div class="stat"><h3>SEO Score</h3><strong id="score">Pending</strong></div>
     </div>
-    <div class="two">
-      <div class="card">
-        <h2>Audit Summary</h2>
-        <div id="summary" class="small">Run audit first.</div>
-        <div class="toolbar">
-          <button id="suggestBtn" class="btn gold" onclick="generateSuggestions()" disabled>Generate Exact SEO Fixes</button>
-          <button class="btn secondary" onclick="showTabById('existing')">Check Existing Links</button>
-        </div>
-      </div>
-      <div class="card">
-        <h2>Existing Link Decision Logic</h2>
-        <div class="notice">Agar existing internal link relevant hai to <b>Keep</b>. Agar anchor generic, target unrelated, footer/sidebar, repeated, ya low value hai to <b>Needs Fix</b> with proper reason and replacement.</div>
-      </div>
-    </div>
-  </section>
 
-  <section id="crawler" class="section"><div class="card"><h2>Real Sitemap + Crawl System</h2><div id="crawlerTable"></div></div></section>
-
-  <section id="pages" class="section">
     <div class="card">
-      <h2>Pages Audit</h2>
-      <div class="searchbar">
-        <input id="pageSearch" oninput="renderPages()" placeholder="Search page URL/title">
-        <select id="pageFilter" onchange="renderPages()"><option>All Pages</option><option>Orphan</option><option>Needs Links</option><option>Strong</option><option>Good</option></select>
-        <button class="btn secondary" onclick="copyPages()">Copy Pages Audit</button>
-      </div>
-      <div id="pagesTable"></div>
+      <h2>Audit Summary</h2>
+      <p id="summary">Enter a website URL and click Audit Website.</p>
     </div>
-  </section>
 
-  <section id="existing" class="section">
     <div class="card">
-      <h2>Existing Internal Link Quality Audit</h2>
-      <div class="notice warning">Yahan tool already-added internal links ko SEO ke hisaab se judge karta hai: relevance, anchor quality, location, benefit, aur fix recommendation.</div>
-      <div class="toolbar">
-        <button class="btn gold" onclick="renderExistingQuality()">Refresh Existing Link Audit</button>
-        <button class="btn secondary" onclick="copyExistingAudit()">Copy Existing Link Audit</button>
-      </div>
-      <div class="searchbar">
-        <input id="existSearch" oninput="renderExistingQuality()" placeholder="Search source, target, anchor">
-        <select id="existFilter" onchange="renderExistingQuality()"><option>All Links</option><option>Keep</option><option>Needs Fix</option><option>No SEO Benefit</option></select>
-        <select id="existType" onchange="renderExistingQuality()"><option>All Locations</option><option>Content</option><option>Footer/Sidebar Ignored</option></select>
-      </div>
-      <div id="existingQualityList" class="small">Run audit first.</div>
+      <h2>Detected Sitemap URLs</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Sitemap URL</th>
+          </tr>
+        </thead>
+        <tbody id="results"></tbody>
+      </table>
     </div>
-  </section>
 
-  <section id="priority" class="section"><div class="card"><h2>Top Priority Pages</h2><div class="toolbar"><button class="btn" onclick="autoSelectPriority()">Auto Select Money Pages</button><button class="btn secondary" onclick="clearPriority()">Clear Priority</button></div><div id="priorityTable"></div></div></section>
-
-  <section id="suggestions" class="section">
     <div class="card">
-      <h2>Exact Copy-Paste SEO Fixes</h2>
-      <div class="toolbar"><button class="btn gold" onclick="generateSuggestions()">Generate / Refresh Fixes</button><button class="btn secondary" onclick="copyAllSuggestions()">Copy All Fixes</button><button class="btn secondary" onclick="downloadSuggestionsCSV()">Download CSV</button></div>
-      <div class="searchbar"><input id="sugSearch" oninput="renderSuggestions()" placeholder="Search source, target, anchor"><select id="sugFilter" onchange="renderSuggestions()"><option>All Actions</option><option>After Sentence</option><option>Before Sentence</option><option>Replace Sentence</option><option>New Paragraph</option></select><select id="sugPriority" onchange="renderSuggestions()"><option>All Priorities</option><option>High</option><option>Medium</option><option>Low</option></select></div>
-      <div id="suggestionList" class="small">Run audit, then click Generate Exact SEO Fixes.</div>
+      <h2>Important Note</h2>
+      <p>
+        This version shows real sitemap data from your Worker API.
+        Existing internal link quality, weak links, anchor fixes, and SEO score require backend crawler upgrade.
+      </p>
     </div>
-  </section>
-
-  <section id="orphan" class="section"><div class="card"><h2>Auto Orphan Page Fixer</h2><div id="orphanList"></div></div></section>
-  <section id="anchors" class="section"><div class="two"><div class="card"><h2>Anchor Text Audit</h2><div id="anchorsTable"></div></div><div class="card"><h2>Anchor Variation Generator</h2><input id="anchorBase" value="hungry jacks menu"><div class="toolbar"><button class="btn" onclick="makeAnchorVariations()">Generate Variations</button></div><div id="anchorVariations" class="small">Same anchor repeat avoid karne ke liye natural variations generate karo.</div></div></div></section>
-  <section id="spam" class="section"><div class="card"><h2>No-Spam Safety Score</h2><div class="checks"><div class="check"><b>Link Density</b><br><div class="bar"><span id="spamBar1" style="width:0%"></span></div><span id="spamText1" class="small">Run audit first.</span></div><div class="check"><b>Anchor Diversity</b><br><div class="bar"><span id="spamBar2" style="width:0%"></span></div><span id="spamText2" class="small">Run audit first.</span></div><div class="check"><b>Relevance Safety</b><br><div class="bar"><span id="spamBar3" style="width:0%"></span></div><span id="spamText3" class="small">Run audit first.</span></div></div></div></section>
-  <section id="preview" class="section"><div class="card"><h2>Before / After Preview</h2><div class="toolbar"><button class="btn" onclick="renderPreview()">Show Preview From Latest Fix</button></div><div id="previewBox" class="small">Generate suggestions first.</div></div></section>
-  <section id="graph" class="section"><div class="card"><h2>Link Equity Flow Map</h2><div class="graph" id="graphBox"></div></div></section>
-  <section id="export" class="section"><div class="two"><div class="card"><h2>Bulk Export</h2><button class="btn" onclick="downloadFullJSON()">Download Full JSON</button><br><br><button class="btn secondary" onclick="downloadSuggestionsCSV()">Download CSV</button><br><br><button class="btn secondary" onclick="copyGoogleSheet()">Copy Google Sheet Format</button><br><br><button class="btn secondary" onclick="copyWPHTML()">Copy WordPress-ready HTML</button></div><div class="card"><h2>Final Live Stack</h2><div class="small">Frontend: Next.js + Tailwind. Backend: Node.js/Python crawler. Parser: Playwright/Puppeteer + Cheerio. DB: PostgreSQL. Queue: Redis. AI: semantic matching + contextual rewrite engine.</div></div></div></section>
-</main>
+  </main>
 </div>
-<div class="toast" id="toast"></div>
 
 <script>
-const state={base:'',pages:[],links:[],anchors:[],suggestions:[],audited:false,priority:new Set(),previewIndex:0};
-const demoPages=[['/','Homepage','Main landing page covering menu, coupons, breakfast and popular guides'],['/hungry-jacks-menu/','Hungry Jacks Menu','Complete menu guide with burgers, chicken, sides, drinks and meals'],['/hungry-jacks-breakfast-menu/','Hungry Jacks Breakfast Menu','Breakfast hours, morning meals, coffee, muffins and value options'],['/hungry-jacks-voucher/','Hungry Jacks Voucher','Voucher guide, discounts, promo codes and saving tips'],['/hungry-jacks-coupons/','Hungry Jacks Coupons','Coupon page with latest deals and practical saving advice'],['/hungry-jacks-australia/','Hungry Jacks Australia','Brand guide, locations, menu overview and customer tips'],['/hungry-jacks-app/','Hungry Jacks App','Mobile app offers, ordering features, rewards and account tips'],['/hungry-jacks-locations/','Hungry Jacks Locations','Store finder guide, opening hours and location tips'],['/hungry-jacks-burgers/','Hungry Jacks Burgers','Burger menu overview, whopper guide and popular favorites'],['/hungry-jacks-value-meals/','Hungry Jacks Value Meals','Affordable meals, bundles and budget ordering tips'],['/hungry-jacks-deals/','Hungry Jacks Deals','Deal overview, limited offers and value ordering strategy'],['/hungry-jacks-prices/','Hungry Jacks Prices','Price guide and menu cost comparison'],['/hungry-jacks-whopper/','Hungry Jacks Whopper','Whopper details, ingredients and popular burger comparison'],['/hungry-jacks-family-meals/','Hungry Jacks Family Meals','Family meal options and group ordering tips'],['/hungry-jacks-kids-menu/','Hungry Jacks Kids Menu','Kids meals, family options and simple ordering guide']];
-const baseAnchors=['hungry jacks menu','hungry jacks breakfast menu','hungry jacks voucher','hungry jacks coupons','hungry jacks australia','hungry jacks app','hungry jacks locations','hungry jacks burgers','hungry jacks value meals','hungry jacks deals','hungry jacks prices','click here','read more','this page'];
-const sentences=['Customers often compare menu prices before choosing what to order.','The best option usually depends on timing, location, and current offers.','Many visitors want a simple way to understand meals, prices, and savings.','Before placing an order, it helps to review related food guides and offers.','This section explains practical details that can help readers make a better choice.','Families and regular customers often look for value before ordering.','Some items become more useful when they are compared with similar options.','A complete guide can make the ordering process faster and easier.','Readers usually want clear details before deciding which option is most useful.'];
+const API_URL = "https://interlinkingpro-api.jacksmenuhungry.workers.dev/";
 
-function showTab(id,btn){document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active')}
-function showTabById(id){document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active')}
-function toast(t){let el=document.getElementById('toast');el.textContent=t;el.style.display='block';setTimeout(()=>el.style.display='none',2400)}
-function escapeHTML(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
-function badge(s){let c=s==='Keep'||String(s).includes('Good')||String(s).includes('Strong')||String(s).includes('Fixed')?'green':s==='Needs Fix'||s==='Orphan'||String(s).includes('Weak')?'red':s==='No SEO Benefit'||s==='Medium'||String(s).includes('Needs')?'gold':String(s).includes('Relevant')?'purple':'blue';return `<span class="pill ${c}">${s}</span>`}
-function table(h,rows){return `<table><thead><tr>${h.map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map(x=>`<td>${x}</td>`).join('')}</tr>`).join('')}</tbody></table>`}
-function sectionName(i){return ['Menu Overview','Deals and Savings','Breakfast Options','Popular Choices','Ordering Tips','Price Comparison','Customer Guide','Value Tips'][i%8]}
-function cleanAnchor(t){return t.toLowerCase().replace(/ guide \d+$/,'')}
-function startAudit(){const base=siteUrl.value.replace(/\/$/,'')||'https://example.com',limit=parseInt(crawlLimit.value,10);state.base=base;state.pages=[];state.links=[];state.anchors=[];state.suggestions=[];state.priority=new Set();state.audited=false;suggestBtn.disabled=true;suggestionList.innerHTML='Audit running.';progress.style.display='block';progressBar.style.width='0%';scanStatus.textContent='Reading sitemap, pages, content links, existing link relevance, anchors and locations...';let w=0;let timer=setInterval(()=>{w+=10;progressBar.style.width=w+'%';if(w>=100){clearInterval(timer);createAudit(base,limit);scanStatus.textContent='Audit completed. Existing link quality audit is ready.';toast('Audit completed')}},100)}
-function createAudit(base,limit){
- for(let i=0;i<limit;i++){const t=demoPages[i%demoPages.length],grp=Math.floor(i/demoPages.length),suffix=grp===0?t[0]:`/guide/${t[0].replaceAll('/','').replace(/^-$/,'page')}-${grp+1}/`,title=grp===0?t[1]:`${t[1]} Guide ${grp+1}`,inlinks=i%17===0?0:(i%8)+1,outlinks=(i%10)+2,depth=i===0?0:(i%5)+1,status=inlinks===0?'Orphan':(inlinks<2||depth>3?'Needs Links':(inlinks>5?'Strong':'Good'));state.pages.push({id:i+1,url:base+suffix,title,topic:t[2],inlinks,outlinks,depth,words:680+(i%12)*130,status,spam:62+(i%33)})}
- for(let i=0;i<Math.min(limit*3,1500);i++){const s=state.pages[i%state.pages.length],tg=state.pages[(i*5+3)%state.pages.length];if(s.url!==tg.url){const anchor=baseAnchors[i%baseAnchors.length],type=i%6===0?'Footer/Sidebar Ignored':'Content',q=qualityForLink(s,tg,anchor,type,i);state.links.push({source:s.title,sourceUrl:s.url,target:tg.title,targetUrl:tg.url,anchor,location:`H2: ${sectionName(i)}, Paragraph ${(i%5)+1}, Sentence ${(i%3)+1}`,type,...q})}}
- const map={};baseAnchors.forEach(a=>map[a]=0);state.links.forEach(l=>map[l.anchor]=(map[l.anchor]||0)+1);state.anchors=Object.keys(map).map(a=>({anchor:a,used:map[a],status:a==='click here'||a==='read more'||a==='this page'?'Weak / Generic':map[a]>Math.ceil(limit/7)?'Overused':map[a]<2?'Need More':'Good'}));state.audited=true;suggestBtn.disabled=false;renderAll()
+async function auditSite(){
+  const site = document.getElementById("site").value.trim();
+  const status = document.getElementById("status");
+  const results = document.getElementById("results");
+
+  if(!site){
+    status.innerHTML = '<span class="error">Please enter website URL.</span>';
+    return;
+  }
+
+  status.innerHTML = "Auditing website...";
+  results.innerHTML = "";
+
+  document.getElementById("pages").textContent = "0";
+  document.getElementById("links").textContent = "Need Crawl";
+  document.getElementById("weak").textContent = "Need Crawl";
+  document.getElementById("score").textContent = "Pending";
+
+  try{
+    const res = await fetch(API_URL + "?site=" + encodeURIComponent(site));
+    const data = await res.json();
+
+    if(!data.success){
+      status.innerHTML = '<span class="error">' + (data.error || "Audit failed") + '</span>';
+      return;
+    }
+
+    status.innerHTML = '<span class="ok">Audit completed. Real sitemap data loaded.</span>';
+
+    document.getElementById("pages").textContent = data.total_urls || 0;
+    document.getElementById("summary").innerHTML =
+      "Main sitemap detected: <b>" + data.sitemap + "</b><br>" +
+      "Total sitemap files found: <b>" + data.total_urls + "</b>";
+
+    if(data.urls && data.urls.length){
+      data.urls.forEach((url,index)=>{
+        const tr = document.createElement("tr");
+        tr.innerHTML = "<td>"+(index+1)+"</td><td>"+url+"</td>";
+        results.appendChild(tr);
+      });
+    } else {
+      results.innerHTML = "<tr><td colspan='2'>No sitemap URLs found.</td></tr>";
+    }
+
+  }catch(e){
+    status.innerHTML = '<span class="error">API connection failed. Check Worker URL or CORS.</span>';
+  }
 }
-function qualityForLink(s,t,anchor,type,i){
- let score=86-((i*7)%41);let status='Keep',benefit='Yes, useful contextual SEO value',reason='Source and target topics are related, anchor is descriptive, and placement is natural.',fix='No change needed.';
- if(type!=='Content'){score=38;status='No SEO Benefit';benefit='Low benefit only';reason='Footer/sidebar links are useful for navigation but should not be counted as strong contextual internal links.';fix=`Add a contextual content link from a relevant paragraph using anchor "${cleanAnchor(t.title)}".`}
- if(['click here','read more','this page'].includes(anchor)){score=45;status='Needs Fix';benefit='Weak SEO benefit';reason='Anchor text is generic and does not explain the target page topic.';fix=`Replace anchor "${anchor}" with "${cleanAnchor(t.title)}" or a natural variation.`}
- if((i%11)===0){score=52;status='Needs Fix';benefit='Limited benefit';reason='Target page is only loosely related to the source page, so the link may not help topical relevance.';fix=`Use a more relevant target page or add 1–2 natural context sentences before linking.`}
- if(score>=72&&type==='Content'&&!['click here','read more','this page'].includes(anchor)){status='Keep';benefit='Yes, keep this link';reason='Relevant contextual link with natural anchor and useful SEO value.';fix='Keep as it is.'}
- return {qualityScore:score,status,benefit,reason,fix}
-}
-function renderAll(){renderDashboard();renderCrawler();renderPages();renderExistingQuality();renderPriority();renderAnchors();renderOrphans();renderSpam();drawGraph()}
-function renderDashboard(){const weak=state.links.filter(l=>l.status!=='Keep').length,avgRel=state.suggestions.length?Math.round(state.suggestions.reduce((a,s)=>a+s.relevance,0)/state.suggestions.length):0,score=Math.max(31,Math.min(94,88-Math.floor(weak/12)));mPages.textContent=state.pages.length;mLinks.textContent=state.links.length;mWeak.textContent=weak;mSug.textContent=state.suggestions.length;mRel.textContent=avgRel+'%';mScore.textContent=score+'%';summary.innerHTML=state.audited?`<b>${state.pages.length}</b> pages found. <b>${state.links.length}</b> existing links checked. <b>${weak}</b> existing links need review/fix. Good links are marked Keep.`:'Run audit first.'}
-function renderCrawler(){const rows=[['/sitemap.xml','Detected','Main sitemap index'],['/post-sitemap.xml','Detected','Posts URLs'],['/page-sitemap.xml','Detected','Static pages'],['Existing link quality','Checked','Relevance, anchor, location, benefit'],['Footer/sidebar links','Ignored','Not counted as main SEO contextual links'],['Noindex/canonical','Checked','Excluded where needed']];crawlerTable.innerHTML=table(['Crawler Item','Status','Purpose'],rows.map(r=>[r[0],badge(r[1]),r[2]]))}
-function renderPages(){const q=(pageSearch?.value||'').toLowerCase(),f=pageFilter?.value||'All Pages';const rows=state.pages.filter(p=>(f==='All Pages'||p.status===f)&&(p.url.toLowerCase().includes(q)||p.title.toLowerCase().includes(q))).map(p=>[p.id,p.url,p.title,p.inlinks,p.outlinks,p.depth,p.words,badge(p.status),state.priority.has(p.id)?badge('Priority'):'-',`<button class="btn secondary smallbtn" onclick="makePageSuggestions(${p.id})">Suggest</button>`]);pagesTable.innerHTML=rows.length?table(['#','Actual URL','Title','In','Out','Depth','Words','Status','Priority','Action'],rows):'<div class="small">No pages found.</div>'}
-function renderExistingQuality(){if(!state.audited){existingQualityList.innerHTML='Run audit first.';return}const q=(existSearch?.value||'').toLowerCase(),f=existFilter?.value||'All Links',ty=existType?.value||'All Locations';const arr=state.links.filter(l=>(f==='All Links'||l.status===f)&&(ty==='All Locations'||l.type===ty)&&(l.source.toLowerCase().includes(q)||l.target.toLowerCase().includes(q)||l.anchor.toLowerCase().includes(q))).slice(0,500);existingQualityList.innerHTML=arr.map((l,i)=>`<div class="suggestion">${badge(l.status)} ${badge(l.qualityScore+'/100')} <span class="pill blue">${l.type}</span><h3>${i+1}. ${escapeHTML(l.source)} → ${escapeHTML(l.target)}</h3><div class="small"><b>Anchor:</b> ${escapeHTML(l.anchor)}<br><b>Exact Location:</b> ${escapeHTML(l.location)}<br><b>Benefit:</b> ${escapeHTML(l.benefit)}</div><div class="code"><b>SEO Decision Reason:</b><br>${escapeHTML(l.reason)}</div><div class="code ${l.status==='Keep'?'':'copy-fix'}"><b>${l.status==='Keep'?'Recommendation':'Fix Recommendation'}:</b><br>${escapeHTML(l.fix)}</div></div>`).join('')||'No matching links.'}
-function copyExistingAudit(){const text=state.links.map(l=>`Source: ${l.sourceUrl}\nTarget: ${l.targetUrl}\nAnchor: ${l.anchor}\nStatus: ${l.status}\nScore: ${l.qualityScore}/100\nLocation: ${l.location}\nBenefit: ${l.benefit}\nReason: ${l.reason}\nRecommendation: ${l.fix}`).join('\n\n');navigator.clipboard.writeText(text);toast('Existing audit copied')}
-function renderPriority(){const rows=state.pages.slice(0,80).map(p=>[`<input type="checkbox" ${state.priority.has(p.id)?'checked':''} onchange="togglePriority(${p.id})">`,p.title,p.url,p.inlinks,badge(p.status),state.priority.has(p.id)?badge('Priority Boost'):'Normal']);priorityTable.innerHTML=table(['Select','Page','URL','Current Inlinks','Status','Mode'],rows)}
-function togglePriority(id){state.priority.has(id)?state.priority.delete(id):state.priority.add(id);renderPages();renderPriority();toast('Priority updated')}
-function autoSelectPriority(){state.pages.filter(p=>/menu|voucher|coupon|deal|price/i.test(p.title)).slice(0,25).forEach(p=>state.priority.add(p.id));renderPages();renderPriority();toast('Money pages selected')}
-function clearPriority(){state.priority.clear();renderPages();renderPriority();toast('Priority cleared')}
-function renderAnchors(){anchorsTable.innerHTML=state.anchors.length?table(['Anchor Text','Used Times','Status'],state.anchors.map(a=>[a.anchor,a.used,badge(a.status)])):'<div class="small">Run audit first.</div>'}
-function makeAnchorVariations(){const a=anchorBase.value.trim()||'target keyword',base=a.replace(/\b\w/g,c=>c.toUpperCase()),variations=[a,`full ${a} guide`,`latest ${a}`,`${a} options`,`${a} details`,`${a} comparison`,`${base} overview`,`complete guide to ${a}`];anchorVariations.innerHTML=variations.map(v=>`<div class="code">${escapeHTML(v)}</div>`).join('')}
-function renderOrphans(){const orphans=state.pages.filter(p=>p.status==='Orphan').slice(0,20);orphanList.innerHTML=orphans.length?orphans.map(p=>`<div class="suggestion">${badge('Orphan')} <h3>${escapeHTML(p.title)}</h3><div class="small"><b>Target:</b> ${escapeHTML(p.url)}</div><div class="code">Recommended source pages:<br>${state.pages.filter(x=>x.id!==p.id).slice(0,7).map(x=>`• ${escapeHTML(x.title)} — add link in H2: ${sectionName(x.id)}, Paragraph ${(x.id%5)+1}`).join('<br>')}</div></div>`).join(''):'<div class="small">No orphan pages found or audit not run.</div>'}
-function renderSpam(){const link=state.pages.length?Math.round(state.pages.reduce((a,p)=>a+p.spam,0)/state.pages.length):0,anchor=state.anchors.length?78:0,rel=state.suggestions.length?Math.round(state.suggestions.reduce((a,s)=>a+s.relevance,0)/state.suggestions.length):0;spamBar1.style.width=link+'%';spamText1.textContent=link?`${link}/100 Safe`:'Run audit first.';spamBar2.style.width=anchor+'%';spamText2.textContent=anchor?`${anchor}/100 Diversity`:'Run audit first.';spamBar3.style.width=rel+'%';spamText3.textContent=rel?`${rel}/100 Relevance`:'Generate fixes first.'}
-function existingPair(sourceUrl,targetUrl){return state.links.some(l=>l.sourceUrl===sourceUrl&&l.targetUrl===targetUrl&&l.type==='Content'&&l.status==='Keep')}
-function generateSuggestions(){if(!state.audited){toast('Run audit first');return}state.suggestions=[];state.pages.forEach(p=>{const needed=countForPage(p);for(let j=0;j<needed;j++){const target=pickTarget(p,j);if(existingPair(p.url,target.url))continue;const anchor=chooseAnchor(cleanAnchor(target.title),p.id+j),action=['After Sentence','Before Sentence','Replace Sentence','New Paragraph'][(p.id+j)%4],sentence=sentences[(p.id+j)%sentences.length],relevance=Math.min(99,82+((p.id+j)%18)+(state.priority.has(target.id)?4:0));if(relevance<80)continue;state.suggestions.push({source:p.title,sourceUrl:p.url,target:target.title,targetUrl:target.url,anchor,action,section:`H2: ${sectionName(p.id+j)}, Paragraph ${((p.id+j)%5)+1}, Sentence ${((p.id+j)%3)+1}`,current:sentence,fix:buildFixHTML(action,sentence,anchor,target.url),priority:state.priority.has(target.id)||p.status==='Orphan'||j===0?'High':(p.status==='Needs Links'?'Medium':'Low'),relevance,spam:Math.min(96,72+((p.id+j)%22))})}});renderDashboard();renderSuggestions();renderOrphans();renderSpam();showTabById('suggestions');toast(state.suggestions.length+' safe fixes generated')}
-function countForPage(p){let n=p.status==='Orphan'?5:p.status==='Needs Links'?3:p.status==='Good'?2:1;if(state.priority.has(p.id))n+=2;return Math.min(n,7)}
-function pickTarget(p,j){let priority=[...state.priority].map(id=>state.pages.find(p=>p.id===id)).filter(Boolean);if(priority.length&&j%2===0){let t=priority[(p.id+j)%priority.length];if(t.url!==p.url)return t}let idx=(p.id+j*7+2)%state.pages.length;if(state.pages[idx].url===p.url)idx=(idx+1)%state.pages.length;return state.pages[idx]}
-function chooseAnchor(a,i){return [a,`full ${a} guide`,`latest ${a}`,`${a} options`,`${a} details`,`${a} comparison`][i%6]}
-function anchorHTML(anchor,url){return `<a href="${url}"><span class="highlight-anchor">${escapeHTML(anchor)}</span></a>`}
-function buildFixHTML(action,sentence,anchor,url){const link=anchorHTML(anchor,url);if(action==='Replace Sentence')return `${escapeHTML(sentence.replace(/\.$/,''))}, especially when readers need a complete ${link} before making a final decision.`;if(action==='Before Sentence')return `For better context, readers can first review the ${link} to understand related details clearly.<br><br>${escapeHTML(sentence)}`;if(action==='After Sentence')return `${escapeHTML(sentence)} You can also compare this with the ${link} for more helpful details.`;return `Add this new paragraph:<br><br>Readers who want a complete understanding of this topic may also find the ${link} useful because it explains related options, practical details, and important points in a natural way.`}
-function makePageSuggestions(id){state.suggestions=[];const p=state.pages.find(x=>x.id===id);for(let j=0;j<7;j++){const target=pickTarget(p,j);if(existingPair(p.url,target.url))continue;const anchor=chooseAnchor(cleanAnchor(target.title),j),action=['After Sentence','Before Sentence','Replace Sentence','New Paragraph'][j%4],sentence=sentences[(id+j)%sentences.length];state.suggestions.push({source:p.title,sourceUrl:p.url,target:target.title,targetUrl:target.url,anchor,action,section:`H2: ${sectionName(id+j)}, Paragraph ${j+1}, Sentence ${(j%3)+1}`,current:sentence,fix:buildFixHTML(action,sentence,anchor,target.url),priority:j<3?'High':'Medium',relevance:94-j,spam:88-j})}renderDashboard();renderSuggestions();renderSpam();showTabById('suggestions')}
-function renderSuggestions(){const q=(sugSearch?.value||'').toLowerCase(),f=sugFilter?.value||'All Actions',pr=sugPriority?.value||'All Priorities';const arr=state.suggestions.filter(s=>(f==='All Actions'||s.action===f)&&(pr==='All Priorities'||s.priority===pr)&&(s.source.toLowerCase().includes(q)||s.target.toLowerCase().includes(q)||s.anchor.toLowerCase().includes(q)));suggestionList.innerHTML=arr.length?arr.map((s,i)=>`<div class="suggestion">${badge(s.priority)} ${badge(s.relevance+'% Relevant')} ${badge(s.spam+'/100 Safe')} <span class="pill gold">${s.action}</span><h3>${i+1}. ${escapeHTML(s.source)} → ${escapeHTML(s.target)}</h3><div class="small"><b>Source:</b> ${escapeHTML(s.sourceUrl)}<br><b>Target:</b> ${escapeHTML(s.targetUrl)}<br><b>Anchor:</b> ${escapeHTML(s.anchor)}<br><b>Exact Location:</b> ${escapeHTML(s.section)}</div><div class="code"><b>Current context:</b><br>${escapeHTML(s.current)}</div><div class="code copy-fix"><b>Copy-paste fix:</b><br>${s.fix}</div><div class="toolbar"><button class="btn secondary smallbtn" onclick="copyOne(${state.suggestions.indexOf(s)})">Copy This Fix</button><button class="btn secondary smallbtn" onclick="previewOne(${state.suggestions.indexOf(s)})">Preview</button></div></div>`).join(''):'No fixes found. Generate fixes first.'}
-function previewOne(i){state.previewIndex=i;renderPreview();showTabById('preview')}
-function renderPreview(){const s=state.suggestions[state.previewIndex||0];if(!s){previewBox.innerHTML='Generate suggestions first.';return}previewBox.innerHTML=`<div class="two"><div><h3>Before</h3><div class="preview">${escapeHTML(s.current)}</div></div><div><h3>After</h3><div class="preview">${s.fix.replace('Add this new paragraph:<br><br>','')}</div></div></div><br><div class="small"><b>Page:</b> ${escapeHTML(s.sourceUrl)}<br><b>Exact Location:</b> ${escapeHTML(s.section)}</div>`}
-function copyOne(i){const s=state.suggestions[i];navigator.clipboard.writeText(formatSuggestion(s));toast('Fix copied')}
-function formatSuggestion(s){return `Source: ${s.sourceUrl}\nTarget: ${s.targetUrl}\nAnchor: ${s.anchor}\nPriority: ${s.priority}\nRelevance: ${s.relevance}%\nSafety: ${s.spam}/100\nAction: ${s.action}\nExact Location: ${s.section}\nCurrent: ${s.current}\nFix:\n${s.fix.replace(/<br>/g,'\n').replace(/<[^>]+>/g,'')}`}
-function copyAllSuggestions(){navigator.clipboard.writeText(state.suggestions.map(formatSuggestion).join('\n\n'));toast('All fixes copied')}
-function copyPages(){navigator.clipboard.writeText(state.pages.map(p=>`${p.url} | ${p.title} | ${p.status} | In:${p.inlinks} Out:${p.outlinks}`).join('\n'));toast('Pages copied')}
-function downloadSuggestionsCSV(){let csv='Source URL,Target URL,Anchor,Priority,Relevance,Safety,Action,Exact Location,Current Sentence,Fix\n'+state.suggestions.map(s=>[s.sourceUrl,s.targetUrl,s.anchor,s.priority,s.relevance,s.spam,s.action,s.section,s.current,s.fix.replace(/<[^>]+>/g,' ')].map(x=>`"${String(x).replace(/"/g,'""')}"`).join(',')).join('\n');download('internal-linking-safe-fixes.csv',csv,'text/csv')}
-function downloadFullJSON(){download('internal-linking-full-report.json',JSON.stringify({...state,priority:[...state.priority]},null,2),'application/json')}
-function copyGoogleSheet(){navigator.clipboard.writeText('Source URL\tTarget URL\tAnchor\tPriority\tRelevance\tSafety\tAction\tExact Location\tFix\n'+state.suggestions.map(s=>[s.sourceUrl,s.targetUrl,s.anchor,s.priority,s.relevance+'%',s.spam+'/100',s.action,s.section,s.fix.replace(/<[^>]+>/g,' ')].join('\t')).join('\n'));toast('Google Sheet format copied')}
-function copyWPHTML(){navigator.clipboard.writeText(state.suggestions.map(s=>`<!-- ${s.source} to ${s.target} | ${s.section} -->\n${s.fix.replace(/<span class="highlight-anchor">/g,'').replace(/<\/span>/g,'')}`).join('\n\n'));toast('WordPress HTML copied')}
-function download(name,content,type){let blob=new Blob([content],{type}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click()}
-function resetDemo(){location.reload()}
-function drawGraph(){let g=graphBox;g.innerHTML='';const nodes=[['Home',55,170],['Menu',245,70],['Breakfast',510,85],['Voucher',265,290],['Coupons',555,305],['Quality Audit',82,315],['Orphan Fix',430,205]];const lines=[[0,1],[1,2],[1,3],[3,4],[0,5],[5,4],[2,4],[6,3],[6,2]];lines.forEach(([a,b])=>{let A=nodes[a],B=nodes[b],x1=A[1]+52,y1=A[2]+20,x2=B[1]+52,y2=B[2]+20,dx=x2-x1,dy=y2-y1,len=Math.sqrt(dx*dx+dy*dy),ang=Math.atan2(dy,dx)*180/Math.PI;let l=document.createElement('div');l.className='line';l.style.left=x1+'px';l.style.top=y1+'px';l.style.width=len+'px';l.style.transform=`rotate(${ang}deg)`;g.appendChild(l)});nodes.forEach(n=>{let d=document.createElement('div');d.className='node';d.style.left=n[1]+'px';d.style.top=n[2]+'px';d.textContent=n[0];g.appendChild(d)})}
 </script>
 </body>
 </html>
