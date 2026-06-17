@@ -16,11 +16,13 @@
     .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
     .stat{background:#0b2233;border:1px solid #1d5b86;border-radius:15px;padding:20px}
     .stat h3{font-size:14px;color:#b6d8ff}
-    .stat strong{font-size:34px;color:#35e1a1}
-    table{width:100%;border-collapse:collapse;margin-top:15px}
-    th,td{border-bottom:1px solid #23465e;padding:12px;text-align:left}
+    .stat strong{font-size:32px;color:#35e1a1}
+    table{width:100%;border-collapse:collapse;margin-top:15px;font-size:14px}
+    th,td{border-bottom:1px solid #23465e;padding:10px;text-align:left;vertical-align:top}
     .error{color:#ff6b6b}
     .ok{color:#35e1a1}
+    .warn{color:#ffd166}
+    a{color:#7fd3ff}
   </style>
 </head>
 <body>
@@ -37,33 +39,66 @@
 
   <main>
     <h1>Internal Linking Audit Tool</h1>
-    <p>Real Cloudflare Worker API connected. Fake demo numbers removed.</p>
+    <p>Real sitemap crawler + internal link checker connected with Cloudflare Worker API.</p>
 
     <div class="card">
       <input id="site" style="width:55%" placeholder="https://example.com">
       <select id="limit">
-        <option value="100">100 Pages</option>
-        <option value="250">250 Pages</option>
-        <option value="500" selected>500 Pages</option>
+        <option value="10">10 Pages</option>
+        <option value="25" selected>25 Pages</option>
+        <option value="50">50 Pages</option>
       </select>
       <button onclick="auditSite()">Audit Website</button>
       <p id="status"></p>
     </div>
 
     <div class="grid">
-      <div class="stat"><h3>Sitemap Files Found</h3><strong id="pages">0</strong></div>
-      <div class="stat"><h3>Internal Links</h3><strong id="links">Need Crawl</strong></div>
-      <div class="stat"><h3>Weak Existing</h3><strong id="weak">Need Crawl</strong></div>
-      <div class="stat"><h3>SEO Score</h3><strong id="score">Pending</strong></div>
+      <div class="stat"><h3>Pages Crawled</h3><strong id="pages">0</strong></div>
+      <div class="stat"><h3>Internal Links</h3><strong id="links">0</strong></div>
+      <div class="stat"><h3>Weak Existing</h3><strong id="weak">0</strong></div>
+      <div class="stat"><h3>SEO Score</h3><strong id="score">0%</strong></div>
     </div>
 
     <div class="card">
       <h2>Audit Summary</h2>
-      <p id="summary">Enter a website URL and click Audit Website.</p>
+      <p id="summary">Enter website URL and click Audit Website.</p>
     </div>
 
     <div class="card">
-      <h2>Detected Sitemap URLs</h2>
+      <h2>Pages Audit</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Page URL</th>
+            <th>Title</th>
+            <th>Internal Links</th>
+            <th>Weak Links</th>
+          </tr>
+        </thead>
+        <tbody id="pagesTable"></tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h2>Weak Internal Links</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Source Page</th>
+            <th>Anchor</th>
+            <th>Target</th>
+            <th>Reason</th>
+            <th>Suggested Fix</th>
+          </tr>
+        </thead>
+        <tbody id="weakTable"></tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h2>Sitemap Files</h2>
       <table>
         <thead>
           <tr>
@@ -71,16 +106,8 @@
             <th>Sitemap URL</th>
           </tr>
         </thead>
-        <tbody id="results"></tbody>
+        <tbody id="sitemapTable"></tbody>
       </table>
-    </div>
-
-    <div class="card">
-      <h2>Important Note</h2>
-      <p>
-        This version shows real sitemap data from your Worker API.
-        Existing internal link quality, weak links, anchor fixes, and SEO score require backend crawler upgrade.
-      </p>
     </div>
   </main>
 </div>
@@ -90,24 +117,22 @@ const API_URL = "https://interlinkingpro-api.jacksmenuhungry.workers.dev/";
 
 async function auditSite(){
   const site = document.getElementById("site").value.trim();
+  const limit = document.getElementById("limit").value;
   const status = document.getElementById("status");
-  const results = document.getElementById("results");
+
+  document.getElementById("pagesTable").innerHTML = "";
+  document.getElementById("weakTable").innerHTML = "";
+  document.getElementById("sitemapTable").innerHTML = "";
 
   if(!site){
     status.innerHTML = '<span class="error">Please enter website URL.</span>';
     return;
   }
 
-  status.innerHTML = "Auditing website...";
-  results.innerHTML = "";
-
-  document.getElementById("pages").textContent = "0";
-  document.getElementById("links").textContent = "Need Crawl";
-  document.getElementById("weak").textContent = "Need Crawl";
-  document.getElementById("score").textContent = "Pending";
+  status.innerHTML = '<span class="warn">Crawling site... please wait.</span>';
 
   try{
-    const res = await fetch(API_URL + "?site=" + encodeURIComponent(site));
+    const res = await fetch(API_URL + "?site=" + encodeURIComponent(site) + "&limit=" + limit);
     const data = await res.json();
 
     if(!data.success){
@@ -115,26 +140,84 @@ async function auditSite(){
       return;
     }
 
-    status.innerHTML = '<span class="ok">Audit completed. Real sitemap data loaded.</span>';
+    status.innerHTML = '<span class="ok">Audit completed successfully.</span>';
 
-    document.getElementById("pages").textContent = data.total_urls || 0;
+    document.getElementById("pages").textContent = data.pages_found || 0;
+    document.getElementById("links").textContent = data.internal_links || 0;
+    document.getElementById("weak").textContent = data.weak_existing || 0;
+    document.getElementById("score").textContent = (data.seo_score || 0) + "%";
+
     document.getElementById("summary").innerHTML =
-      "Main sitemap detected: <b>" + data.sitemap + "</b><br>" +
-      "Total sitemap files found: <b>" + data.total_urls + "</b>";
+      "Main sitemap: <b>" + data.sitemap + "</b><br>" +
+      "Sitemap files found: <b>" + data.sitemap_files_found + "</b><br>" +
+      "Pages crawled: <b>" + data.pages_found + "</b><br>" +
+      "Internal links found: <b>" + data.internal_links + "</b><br>" +
+      "Weak links found: <b>" + data.weak_existing + "</b>";
 
-    if(data.urls && data.urls.length){
-      data.urls.forEach((url,index)=>{
-        const tr = document.createElement("tr");
-        tr.innerHTML = "<td>"+(index+1)+"</td><td>"+url+"</td>";
-        results.appendChild(tr);
-      });
-    } else {
-      results.innerHTML = "<tr><td colspan='2'>No sitemap URLs found.</td></tr>";
-    }
+    renderSitemaps(data.sitemap_urls || []);
+    renderPages(data.pages || []);
+    renderWeakLinks(data.weak_links || []);
 
   }catch(e){
-    status.innerHTML = '<span class="error">API connection failed. Check Worker URL or CORS.</span>';
+    status.innerHTML = '<span class="error">API connection failed.</span>';
   }
+}
+
+function renderSitemaps(items){
+  const tbody = document.getElementById("sitemapTable");
+  if(!items.length){
+    tbody.innerHTML = "<tr><td colspan='2'>No sitemap files found.</td></tr>";
+    return;
+  }
+  items.forEach((url,i)=>{
+    tbody.innerHTML += `<tr><td>${i+1}</td><td><a href="${url}" target="_blank">${url}</a></td></tr>`;
+  });
+}
+
+function renderPages(items){
+  const tbody = document.getElementById("pagesTable");
+  if(!items.length){
+    tbody.innerHTML = "<tr><td colspan='5'>No pages crawled.</td></tr>";
+    return;
+  }
+  items.forEach((p,i)=>{
+    tbody.innerHTML += `
+      <tr>
+        <td>${i+1}</td>
+        <td><a href="${p.url}" target="_blank">${p.url}</a></td>
+        <td>${escapeHtml(p.title || "")}</td>
+        <td>${p.internal_links}</td>
+        <td>${p.weak_links}</td>
+      </tr>`;
+  });
+}
+
+function renderWeakLinks(items){
+  const tbody = document.getElementById("weakTable");
+  if(!items.length){
+    tbody.innerHTML = "<tr><td colspan='6'>No weak internal links found in crawled pages.</td></tr>";
+    return;
+  }
+  items.forEach((w,i)=>{
+    tbody.innerHTML += `
+      <tr>
+        <td>${i+1}</td>
+        <td><a href="${w.source}" target="_blank">${w.source}</a></td>
+        <td>${escapeHtml(w.anchor || "")}</td>
+        <td><a href="${w.target}" target="_blank">${w.target}</a></td>
+        <td>${escapeHtml(w.reason || "")}</td>
+        <td>${escapeHtml(w.fix || "")}</td>
+      </tr>`;
+  });
+}
+
+function escapeHtml(text){
+  return String(text)
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
 }
 </script>
 </body>
