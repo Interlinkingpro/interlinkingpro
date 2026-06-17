@@ -200,6 +200,7 @@ function clearTables(){
 
 function renderExactFixes(items){
   const tbody = document.getElementById("fixesTable");
+
   if(!items.length){
     tbody.innerHTML = "<tr><td colspan='9'>No exact fixes generated.</td></tr>";
     return;
@@ -210,8 +211,11 @@ function renderExactFixes(items){
 `Source Page: ${f.source}
 Target Page: ${f.target}
 Suggested Anchor: ${f.suggested_anchor}
-Exact Place: ${f.exact_place}
+Add Link On: ${f.add_link_on || f.anchor_phrase_found || f.suggested_anchor}
+Exact Place: ${f.exact_anchor_location || f.exact_place}
 Instruction: ${f.instruction}
+Why This Link: ${f.why_this_link || "Relevant internal link opportunity."}
+SEO Impact: ${f.seo_impact || f.priority}
 Existing Paragraph/Sentence: ${f.existing_sentence}
 Extra Sentence: ${f.suggested_extra_sentence || "Not needed"}
 Priority: ${f.priority}
@@ -223,15 +227,25 @@ Relevance Score: ${f.relevance_score}%`;
         <td><a href="${f.source}" target="_blank">${shortUrl(f.source)}</a></td>
         <td><a href="${f.target}" target="_blank">${shortUrl(f.target)}</a></td>
         <td><b>${escapeHtml(f.suggested_anchor || "")}</b></td>
-        <td><span class="badge">${escapeHtml(f.exact_place || "")}</span></td>
-        <td>${escapeHtml(f.existing_sentence || "")}</td>
-        <td>${f.suggested_extra_sentence ? escapeHtml(f.suggested_extra_sentence) : "<span class='ok'>Use existing text</span>"}</td>
+        <td>
+          <span class="badge">${escapeHtml(f.exact_place || "")}</span><br>
+          <small><b>Add Link On:</b> ${escapeHtml(f.add_link_on || f.anchor_phrase_found || f.suggested_anchor || "")}</small>
+        </td>
+        <td>
+          ${escapeHtml(f.existing_sentence || "")}
+          <br><br>
+          <small><b>Why:</b> ${escapeHtml(f.why_this_link || "Relevant internal link opportunity.")}</small>
+        </td>
+        <td>
+          ${f.suggested_extra_sentence ? escapeHtml(f.suggested_extra_sentence) : "<span class='ok'>Use existing text</span>"}
+          <br><br>
+          <small><b>SEO Impact:</b> ${escapeHtml(f.seo_impact || f.priority || "")}</small>
+        </td>
         <td><span class="${String(f.priority).toLowerCase()}">${escapeHtml(f.priority || "")}</span><br>${f.relevance_score || 0}%</td>
         <td><button class="copy" onclick='copyFix(${JSON.stringify(copyText)})'>Copy</button></td>
       </tr>`;
   });
 }
-
 function renderSitemaps(items){
   const tbody = document.getElementById("sitemapTable");
   if(!items.length){
