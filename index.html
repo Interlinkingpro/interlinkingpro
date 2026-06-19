@@ -19,15 +19,11 @@
     .stat strong{font-size:30px;color:#35e1a1}
     table{width:100%;border-collapse:collapse;margin-top:15px;font-size:14px}
     th,td{border-bottom:1px solid #23465e;padding:10px;text-align:left;vertical-align:top}
-    .error{color:#ff6b6b}
-    .ok{color:#35e1a1}
-    .warn{color:#ffd166}
+    .error{color:#ff6b6b}.ok{color:#35e1a1}.warn{color:#ffd166}
     .badge{display:inline-block;padding:5px 9px;border-radius:8px;background:#123a55;color:#aee5ff;font-size:12px}
-    .high{color:#35e1a1;font-weight:bold}
-    .medium{color:#ffd166;font-weight:bold}
-    .low{color:#ff9f6e;font-weight:bold}
-    a{color:#7fd3ff}
-    .copy{padding:8px 12px;font-size:12px;background:#ffb020;color:#1b1200}
+    .high{color:#35e1a1;font-weight:bold}.medium{color:#ffd166;font-weight:bold}.low{color:#ff9f6e;font-weight:bold}
+    a{color:#7fd3ff}.copy{padding:8px 12px;font-size:12px;background:#ffb020;color:#1b1200}
+    small{line-height:1.4}
   </style>
 </head>
 <body>
@@ -39,32 +35,43 @@
     <div>Pages Audit</div>
     <div>Existing Link Quality</div>
     <div>Exact SEO Fixes</div>
-    <div>Anchor Suggestions</div>
+    <div>Architecture Summary</div>
+    <div>Orphan Pages</div>
+    <div>Dead End Pages</div>
+    <div>Interlinking Tree</div>
   </aside>
 
   <main>
     <h1>Internal Linking Audit Tool</h1>
-    <p>Real sitemap crawler, internal link checker, weak link detector, and exact SEO fix suggestions.</p>
+    <p>Real sitemap crawler, internal link checker, weak link detector, exact SEO fixes, and internal architecture analysis.</p>
 
     <div class="card">
       <input id="site" style="width:55%" placeholder="https://example.com">
       <select id="limit">
-  <option value="25">25 Pages</option>
-  <option value="50">50 Pages</option>
-  <option value="100" selected>100 Pages</option>
-  <option value="250">250 Pages</option>
-  <option value="500">500 Pages</option>
-</select>
+        <option value="25">25 Pages</option>
+        <option value="50">50 Pages</option>
+        <option value="100" selected>100 Pages</option>
+        <option value="250">250 Pages</option>
+        <option value="500">500 Pages</option>
+      </select>
       <button onclick="auditSite()">Audit Website</button>
       <p id="status"></p>
     </div>
 
     <div class="grid">
-      <div class="stat"><h3>Pages Crawled</h3><strong id="pages">0</strong></div>
+      <div class="stat"><h3>Pages Found</h3><strong id="pages">0</strong></div>
+      <div class="stat"><h3>Crawled OK</h3><strong id="crawled">0</strong></div>
       <div class="stat"><h3>Internal Links</h3><strong id="links">0</strong></div>
       <div class="stat"><h3>Weak Existing</h3><strong id="weak">0</strong></div>
-      <div class="stat"><h3>Exact Fixes</h3><strong id="fixes">0</strong></div>
       <div class="stat"><h3>SEO Score</h3><strong id="score">0%</strong></div>
+    </div>
+
+    <div class="grid">
+      <div class="stat"><h3>Exact Fixes</h3><strong id="fixes">0</strong></div>
+      <div class="stat"><h3>Orphan Pages</h3><strong id="orphanCount">0</strong></div>
+      <div class="stat"><h3>Dead End Pages</h3><strong id="deadEndCount">0</strong></div>
+      <div class="stat"><h3>Tree Nodes</h3><strong id="treeNodes">0</strong></div>
+      <div class="stat"><h3>Architecture</h3><strong id="archStatus">Pending</strong></div>
     </div>
 
     <div class="card">
@@ -73,23 +80,59 @@
     </div>
 
     <div class="card">
+      <h2>Architecture Summary</h2>
+      <p id="architectureSummary">Architecture data will appear after audit.</p>
+    </div>
+
+    <div class="card">
       <h2>Exact SEO Fixes</h2>
       <p>Ye section exact batata hai kis page se kis page ko link dena hai, kis anchor se, aur kahan insert karna hai.</p>
       <table>
         <thead>
           <tr>
-            <th>#</th>
-            <th>Source Page</th>
-            <th>Target Page</th>
-            <th>Anchor</th>
-            <th>Exact Place</th>
-            <th>Existing Paragraph / Sentence</th>
-            <th>Extra Sentence</th>
-            <th>Priority</th>
-            <th>Copy</th>
+            <th>#</th><th>Source Page</th><th>Target Page</th><th>Anchor</th><th>Type</th><th>Exact Place</th><th>Existing Paragraph / Sentence</th><th>Extra Sentence</th><th>Priority</th><th>Copy</th>
           </tr>
         </thead>
         <tbody id="fixesTable"></tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h2>Orphan Pages</h2>
+      <p>Pages jo sitemap me hain lekin crawled pages se unko internal link nahi mil raha.</p>
+      <table>
+        <thead>
+          <tr>
+            <th>#</th><th>Orphan Page</th><th>Title</th><th>Suggested Parent</th><th>Suggested Anchor</th><th>Priority</th><th>Open</th>
+          </tr>
+        </thead>
+        <tbody id="orphanTable"></tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h2>Dead End Pages</h2>
+      <p>Pages jahan se useful outgoing internal links kam ya zero hain.</p>
+      <table>
+        <thead>
+          <tr>
+            <th>#</th><th>Page</th><th>Title</th><th>Outgoing Links</th><th>Suggested Action</th><th>Priority</th><th>Open</th>
+          </tr>
+        </thead>
+        <tbody id="deadEndTable"></tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h2>Interlinking Tree</h2>
+      <p>Parent, child aur sibling structure. Is se SEO-friendly internal linking architecture samajh aati hai.</p>
+      <table>
+        <thead>
+          <tr>
+            <th>#</th><th>Page</th><th>Topic</th><th>Parent</th><th>Children</th><th>Siblings</th><th>In / Out</th>
+          </tr>
+        </thead>
+        <tbody id="treeTable"></tbody>
       </table>
     </div>
 
@@ -98,11 +141,7 @@
       <table>
         <thead>
           <tr>
-            <th>#</th>
-            <th>Page URL</th>
-            <th>Title</th>
-            <th>Internal Links</th>
-            <th>Weak Links</th>
+            <th>#</th><th>Page URL</th><th>Title</th><th>Topic</th><th>Internal Links</th><th>Weak Links</th><th>Status</th>
           </tr>
         </thead>
         <tbody id="pagesTable"></tbody>
@@ -114,12 +153,7 @@
       <table>
         <thead>
           <tr>
-            <th>#</th>
-            <th>Source Page</th>
-            <th>Anchor</th>
-            <th>Target</th>
-            <th>Reason</th>
-            <th>Suggested Fix</th>
+            <th>#</th><th>Source Page</th><th>Anchor</th><th>Target</th><th>Reason</th><th>Suggested Fix</th>
           </tr>
         </thead>
         <tbody id="weakTable"></tbody>
@@ -129,12 +163,7 @@
     <div class="card">
       <h2>Sitemap Files</h2>
       <table>
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Sitemap URL</th>
-          </tr>
-        </thead>
+        <thead><tr><th>#</th><th>Sitemap URL</th></tr></thead>
         <tbody id="sitemapTable"></tbody>
       </table>
     </div>
@@ -170,20 +199,37 @@ async function auditSite(){
     status.innerHTML = '<span class="ok">Audit completed successfully.</span>';
 
     document.getElementById("pages").textContent = data.pages_found || 0;
+    document.getElementById("crawled").textContent = data.pages_crawled_successfully || 0;
     document.getElementById("links").textContent = data.internal_links || 0;
     document.getElementById("weak").textContent = data.weak_existing || 0;
     document.getElementById("fixes").textContent = (data.exact_fixes || []).length;
     document.getElementById("score").textContent = (data.seo_score || 0) + "%";
 
+    const arch = data.architecture_summary || {};
+    document.getElementById("orphanCount").textContent = arch.orphan_count || (data.orphan_pages || []).length || 0;
+    document.getElementById("deadEndCount").textContent = arch.dead_end_count || (data.dead_end_pages || []).length || 0;
+    document.getElementById("treeNodes").textContent = arch.tree_nodes || (data.interlinking_tree || []).length || 0;
+    document.getElementById("archStatus").textContent = "Ready";
+
     document.getElementById("summary").innerHTML =
-      "Main sitemap: <b>" + data.sitemap + "</b><br>" +
-      "Sitemap files found: <b>" + data.sitemap_files_found + "</b><br>" +
-      "Pages crawled: <b>" + data.pages_found + "</b><br>" +
-      "Internal links found: <b>" + data.internal_links + "</b><br>" +
-      "Weak links found: <b>" + data.weak_existing + "</b><br>" +
+      "Main sitemap: <b>" + escapeHtml(data.sitemap || "") + "</b><br>" +
+      "Sitemap files found: <b>" + (data.sitemap_files_found || 0) + "</b><br>" +
+      "Pages found: <b>" + (data.pages_found || 0) + "</b><br>" +
+      "Pages crawled successfully: <b>" + (data.pages_crawled_successfully || 0) + "</b><br>" +
+      "Internal links found: <b>" + (data.internal_links || 0) + "</b><br>" +
+      "Weak links found: <b>" + (data.weak_existing || 0) + "</b><br>" +
       "Exact SEO fixes generated: <b>" + ((data.exact_fixes || []).length) + "</b>";
 
+    document.getElementById("architectureSummary").innerHTML =
+      "Orphan pages found: <b>" + ((data.orphan_pages || []).length) + "</b><br>" +
+      "Dead end pages found: <b>" + ((data.dead_end_pages || []).length) + "</b><br>" +
+      "Interlinking tree nodes: <b>" + ((data.interlinking_tree || []).length) + "</b><br>" +
+      "Action: Fix orphan pages first, then dead-end pages, then improve tree structure.";
+
     renderExactFixes(data.exact_fixes || []);
+    renderOrphans(data.orphan_pages || []);
+    renderDeadEnds(data.dead_end_pages || []);
+    renderTree(data.interlinking_tree || []);
     renderSitemaps(data.sitemap_urls || []);
     renderPages(data.pages || []);
     renderWeakLinks(data.weak_links || []);
@@ -194,17 +240,15 @@ async function auditSite(){
 }
 
 function clearTables(){
-  document.getElementById("pagesTable").innerHTML = "";
-  document.getElementById("weakTable").innerHTML = "";
-  document.getElementById("sitemapTable").innerHTML = "";
-  document.getElementById("fixesTable").innerHTML = "";
+  ["pagesTable","weakTable","sitemapTable","fixesTable","orphanTable","deadEndTable","treeTable"].forEach(id=>{
+    document.getElementById(id).innerHTML = "";
+  });
 }
 
 function renderExactFixes(items){
   const tbody = document.getElementById("fixesTable");
-
   if(!items.length){
-    tbody.innerHTML = "<tr><td colspan='9'>No exact fixes generated.</td></tr>";
+    tbody.innerHTML = "<tr><td colspan='10'>No exact fixes generated.</td></tr>";
     return;
   }
 
@@ -213,6 +257,7 @@ function renderExactFixes(items){
 `Source Page: ${f.source}
 Target Page: ${f.target}
 Suggested Anchor: ${f.suggested_anchor}
+Opportunity Type: ${f.opportunity_type || "Internal Link"}
 Add Link On: ${f.add_link_on || f.anchor_phrase_found || f.suggested_anchor}
 Exact Place: ${f.exact_anchor_location || f.exact_place}
 Instruction: ${f.instruction}
@@ -229,25 +274,91 @@ Relevance Score: ${f.relevance_score}%`;
         <td><a href="${f.source}" target="_blank">${shortUrl(f.source)}</a></td>
         <td><a href="${f.target}" target="_blank">${shortUrl(f.target)}</a></td>
         <td><b>${escapeHtml(f.suggested_anchor || "")}</b></td>
+        <td><span class="badge">${escapeHtml(f.opportunity_type || "LINK")}</span></td>
         <td>
           <span class="badge">${escapeHtml(f.exact_place || "")}</span><br>
           <small><b>Add Link On:</b> ${escapeHtml(f.add_link_on || f.anchor_phrase_found || f.suggested_anchor || "")}</small>
         </td>
         <td>
           ${escapeHtml(f.existing_sentence || "")}
-          <br><br>
-          <small><b>Why:</b> ${escapeHtml(f.why_this_link || "Relevant internal link opportunity.")}</small>
+          <br><br><small><b>Why:</b> ${escapeHtml(f.why_this_link || "Relevant internal link opportunity.")}</small>
         </td>
         <td>
           ${f.suggested_extra_sentence ? escapeHtml(f.suggested_extra_sentence) : "<span class='ok'>Use existing text</span>"}
-          <br><br>
-          <small><b>SEO Impact:</b> ${escapeHtml(f.seo_impact || f.priority || "")}</small>
+          <br><br><small><b>SEO Impact:</b> ${escapeHtml(f.seo_impact || f.priority || "")}</small>
         </td>
         <td><span class="${String(f.priority).toLowerCase()}">${escapeHtml(f.priority || "")}</span><br>${f.relevance_score || 0}%</td>
         <td><button class="copy" onclick='copyFix(${JSON.stringify(copyText)})'>Copy</button></td>
       </tr>`;
   });
 }
+
+function renderOrphans(items){
+  const tbody = document.getElementById("orphanTable");
+  if(!items.length){
+    tbody.innerHTML = "<tr><td colspan='7'>No orphan pages found.</td></tr>";
+    return;
+  }
+
+  items.forEach((p,i)=>{
+    tbody.innerHTML += `
+      <tr>
+        <td>${i+1}</td>
+        <td><a href="${p.url}" target="_blank">${shortUrl(p.url)}</a></td>
+        <td>${escapeHtml(p.title || "")}</td>
+        <td>${p.suggested_parent ? `<a href="${p.suggested_parent}" target="_blank">${shortUrl(p.suggested_parent)}</a>` : "<span class='warn'>Need parent</span>"}</td>
+        <td><b>${escapeHtml(p.suggested_anchor || "")}</b></td>
+        <td><span class="high">${escapeHtml(p.priority || "High")}</span></td>
+        <td><button class="copy" onclick="window.open('${p.url}','_blank')">Open</button></td>
+      </tr>`;
+  });
+}
+
+function renderDeadEnds(items){
+  const tbody = document.getElementById("deadEndTable");
+  if(!items.length){
+    tbody.innerHTML = "<tr><td colspan='7'>No dead end pages found.</td></tr>";
+    return;
+  }
+
+  items.forEach((p,i)=>{
+    tbody.innerHTML += `
+      <tr>
+        <td>${i+1}</td>
+        <td><a href="${p.url}" target="_blank">${shortUrl(p.url)}</a></td>
+        <td>${escapeHtml(p.title || "")}</td>
+        <td>${p.outgoing_links || 0}</td>
+        <td>${escapeHtml(p.suggested_action || "Add relevant internal links.")}</td>
+        <td><span class="medium">${escapeHtml(p.priority || "Medium")}</span></td>
+        <td><button class="copy" onclick="window.open('${p.url}','_blank')">Open</button></td>
+      </tr>`;
+  });
+}
+
+function renderTree(items){
+  const tbody = document.getElementById("treeTable");
+  if(!items.length){
+    tbody.innerHTML = "<tr><td colspan='7'>No interlinking tree data found.</td></tr>";
+    return;
+  }
+
+  items.forEach((node,i)=>{
+    const children = (node.children || []).map(c => `<a href="${c.url}" target="_blank">${escapeHtml(c.suggested_anchor || shortUrl(c.url))}</a>`).join("<br>");
+    const siblings = (node.siblings || []).map(s => `<a href="${s.url}" target="_blank">${escapeHtml(s.suggested_anchor || shortUrl(s.url))}</a>`).join("<br>");
+
+    tbody.innerHTML += `
+      <tr>
+        <td>${i+1}</td>
+        <td><a href="${node.page}" target="_blank">${shortUrl(node.page)}</a><br><small>${escapeHtml(node.title || "")}</small></td>
+        <td><span class="badge">${escapeHtml(node.topic || "general")}</span></td>
+        <td>${node.parent ? `<a href="${node.parent}" target="_blank">${shortUrl(node.parent)}</a>` : "<span class='warn'>No parent</span>"}</td>
+        <td>${children || "<span class='warn'>No child pages</span>"}</td>
+        <td>${siblings || "<span class='warn'>No siblings</span>"}</td>
+        <td>In: <b>${node.incoming_links || 0}</b><br>Out: <b>${node.outgoing_links || 0}</b></td>
+      </tr>`;
+  });
+}
+
 function renderSitemaps(items){
   const tbody = document.getElementById("sitemapTable");
   if(!items.length){
@@ -262,7 +373,7 @@ function renderSitemaps(items){
 function renderPages(items){
   const tbody = document.getElementById("pagesTable");
   if(!items.length){
-    tbody.innerHTML = "<tr><td colspan='5'>No pages crawled.</td></tr>";
+    tbody.innerHTML = "<tr><td colspan='7'>No pages crawled.</td></tr>";
     return;
   }
   items.forEach((p,i)=>{
@@ -271,8 +382,10 @@ function renderPages(items){
         <td>${i+1}</td>
         <td><a href="${p.url}" target="_blank">${shortUrl(p.url)}</a></td>
         <td>${escapeHtml(p.title || "")}</td>
-        <td>${p.internal_links}</td>
-        <td>${p.weak_links}</td>
+        <td><span class="badge">${escapeHtml(p.topic || "unknown")}</span></td>
+        <td>${p.internal_links || 0}</td>
+        <td>${p.weak_links || 0}</td>
+        <td>${escapeHtml(String(p.crawl_status || ""))}</td>
       </tr>`;
   });
 }
@@ -298,15 +411,11 @@ function renderWeakLinks(items){
 
 function copyFix(text){
   navigator.clipboard.writeText(text);
-  alert("Exact SEO fix copied.");
+  alert("Copied.");
 }
 
 function shortUrl(url){
-  try{
-    return new URL(url).pathname || "/";
-  }catch(e){
-    return url;
-  }
+  try{return new URL(url).pathname || "/";}catch(e){return url;}
 }
 
 function escapeHtml(text){
